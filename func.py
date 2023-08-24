@@ -2,72 +2,60 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Função para criar o grafo com os arquivos de entrada
-def criar_grafo(politicians_file, graph_file):
-    # Carregando os dados dos políticos
-    politicians_data = pd.read_csv(politicians_file)
-    
-    # Criando um grafo direcionado
-    G = nx.DiGraph()
-    
-    # Adicionando nós (deputados) ao grafo
-    for _, row in politicians_data.iterrows():
-        G.add_node(row['nome'], partido=row['partido'], votacoes=row['votacoes'])
-    
-    # Carregando os dados das votações em comum
-    graph_data = pd.read_csv(graph_file)
-    
-    # Adicionando arestas ponderadas ao grafo
-    for _, row in graph_data.iterrows():
+import networkx as nx
+import matplotlib.pyplot as plt
+import pandas as pd
+
+def criar_grafo(ano, partidos=None):
+    # Leitura do arquivo de políticos
+    politicos_file = f'datasets/politicians{ano}.txt'
+    politicos_df = pd.read_csv(politicos_file, sep='\t', header=None, names=['nome', 'partido', 'votacoes'])
+
+    # Filtrar políticos por partido, se necessário
+    if partidos:
+        politicos_df = politicos_df[politicos_df['partido'].isin(partidos)]
+
+    # Criação do grafo
+    G = nx.Graph()
+
+    # Leitura do arquivo de votações
+    votacoes_file = f'datasets/graph{ano}.txt'
+    votacoes_df = pd.read_csv(votacoes_file, sep='\t', header=None, names=['deputado1', 'deputado2', 'votacoes_iguais'])
+
+    # Adicionar arestas ao grafo com peso igual ao número de votações iguais
+    for _, row in votacoes_df.iterrows():
         deputado1 = row['deputado1']
         deputado2 = row['deputado2']
-        peso = row['votos_em_comum'] / min(G.nodes[deputado1]['votacoes'], G.nodes[deputado2]['votacoes'])
-        G.add_edge(deputado1, deputado2, weight=peso)
-    print("passou aq")
+        votacoes_iguais = row['votacoes_iguais']
+        G.add_edge(deputado1, deputado2, weight=votacoes_iguais, ano=ano)
+        
+    print("GRAFO CONSTRUIDO ### FILTRAGEM APLICADA")
     
-    return G
+    return G  # Retorna o grafo
 
-# Função para aplicar os filtros no grafo
-def aplicar_filtros(grafo, ano=None, partidos=None):
-    if ano:
-        # Remove todas as arestas que não correspondem ao ano especificado
-        arestas_a_remover = [(u, v) for u, v, d in grafo.edges(data=True) if d['ano'] != ano]
-        grafo.remove_edges_from(arestas_a_remover)
+# Função para criar e retornar um novo grafo normalizado a partir do grafo G
+def criar_grafo_normalizado(grafo):
+    # Cria uma cópia do grafo original para não modificá-lo
+    grafo_normalizado = grafo.copy()
     
-    if partidos:
-        # Remove todos os nós que não pertencem aos partidos especificados
-        nos_a_remover = [n for n, d in grafo.nodes(data=True) if d['partido'] not in partidos]
-        grafo.remove_nodes_from(nos_a_remover)
-
-# Função para normalizar os pesos das arestas
-def normalizar_pesos(grafo):
-    for u, v, d in grafo.edges(data=True):
-        grafo[u][v]['weight'] = d['weight'] / sum([grafo[x][v]['weight'] for x in grafo.predecessors(v)])
-
-# Função para remover arestas com peso abaixo de um threshold
-def remover_arestas_pouco_significativas(grafo, threshold):
-    arestas_a_remover = [(u, v) for u, v, d in grafo.edges(data=True) if d['weight'] < threshold]
-    grafo.remove_edges_from(arestas_a_remover)
-
-# Função para inverter os pesos das arestas
-def inverter_pesos(grafo):
-    for u, v, d in grafo.edges(data=True):
-        grafo[u][v]['weight'] = 1 - d['weight']
-
-# Função para calcular a centralidade de betweenness
-def calcular_centralidade_betweenness(grafo):
-    centralidade = nx.betweenness_centrality(grafo, weight='weight')
-    return centralidade
-
-# Função para plotar o gráfico de barras da centralidade
-def plotar_grafico_centralidade(centralidade):
-    nomes = list(centralidade.keys())
-    valores = list(centralidade.values())
+    # Lista de arestas a serem removidas
+    arestas_remover = []
     
-    plt.figure(figsize=(12, 6))
-    plt.bar(nomes, valores)
-    plt.xlabel('Deputados')
-    plt.ylabel('Centralidade de Betweenness')
-    plt.xticks(rotation=90)
-    plt.tight_layout()
-    plt.show()
+    # Normalizar os pesos das arestas do grafo normalizado
+    for u, v, w in grafo_normalizado.edges(data=True):
+        # Obter o número mínimo de votações entre os deputados u e v
+        min_votes = min(w['weight'], grafo_normalizado[v][u]['weight'])  # Ajustado para considerar ambas as direções
+        
+        # Normalizar o peso da aresta com base na fórmula fornecida
+        if min_votes > 0:
+            grafo_normalizado[u][v]['weight'] = w['weight'] / min_votes
+        else:
+            # Marcar a aresta para remoção se não houver votações em comum
+            arestas_remover.append((u, v))
+    
+    # Remover arestas marcadas para remoção
+    for u, v in arestas_remover:
+        grafo_normalizado.remove_edge(u, v)
+    
+    print("GRAFO NORMALIZADO ###")
+    return grafo_normalizado
