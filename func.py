@@ -59,3 +59,24 @@ def criar_grafo_normalizado(grafo):
     
     print("GRAFO NORMALIZADO ###")
     return grafo_normalizado
+
+def criar_grafo_threshold(grafo_normalizado, threshold):
+    # Cria uma cópia do grafo normalizado original para não modificá-lo
+    grafo_com_threshold = grafo_normalizado.copy()
+    
+    # Lista de arestas a serem removidas
+    arestas_remover = []
+    
+    # Itera sobre as arestas do grafo normalizado com threshold
+    for u, v, w in grafo_com_threshold.edges(data=True):
+        if w['weight'] < threshold:
+            # Marcar a aresta para remoção se o peso for menor que o threshold
+            arestas_remover.append((u, v))
+    
+    # Remover arestas marcadas para remoção
+    for u, v in arestas_remover:
+        grafo_com_threshold.remove_edge(u, v)
+        
+    print("GRAFO NORMALIZADO com THRESHOLD###")
+    
+    return grafo_com_threshold
