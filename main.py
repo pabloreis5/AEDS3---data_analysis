@@ -3,6 +3,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Pablo Batista de Andrade Reis - 20.1.8106
+# Laura Chaves Soares - 21.1.8125
+
 ano = 2023
 partidos_filtrados = ["PT", "PSOL"]
 threshold = 0.9
