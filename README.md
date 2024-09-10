@@ -29,7 +29,7 @@ Aqui estão alguns exemplos de gráficos gerados com base nos seguintes filtros:
 - **Partidos:** PT e PSOL
 - **Threshold:** 0.9
 
-![Exemplo de Gráfico 1]((https://media.licdn.com/dms/image/v2/D4D22AQGRx5U2E7C5aQ/feedshare-shrink_1280/feedshare-shrink_1280/0/1697825836306?e=1729123200&v=beta&t=qsX05keZ8n5Gz6fZJkgy3QZVh4AdjNMRkf5wt4vhxvg))
+![Exemplo de Gráfico 1](imgs_test/betweenness_centrality.png)
 
 
 ![Exemplo de Gráfico 2](url-da-imagem-2)
