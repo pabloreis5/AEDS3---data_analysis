@@ -31,5 +31,6 @@ Aqui estão alguns exemplos de gráficos gerados com base nos seguintes filtros:
 
 ![Exemplo de Gráfico 1](imgs_test/betweenness_centrality.png)
 
+![Exemplo de Gráfico 2](imgs_test/grafo_threshold.png)
 
-![Exemplo de Gráfico 2](url-da-imagem-2)
+![Exemplo de Gráfico 2](imgs_test/heatmap.png)
